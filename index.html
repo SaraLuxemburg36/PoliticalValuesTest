@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoliticalValues Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>PoliticalValues Test</h1>
+        <p id="subtitle">Un test basato sul modello del political compass</p>
+
+        <div id="instructions">
+            <h2>Funzionamento del test</h2>
+            <p>
+                Il PoliticalValues test è un test che si basa sul political compass. Ha l'obiettivo di posizionarti 
+                nel grande scacchiere delle ideologie politiche. Alla conclusione del test, potrai visionare un political 
+                compass riempito con tutte le ideologie esistenti, in modo da poter valutare in modo preciso la tua posizione. 
+                Se non conosci o vuoi approfondire la tua ideologia o una qualunque presente sul compass, ti sarà possibile accedere 
+                al sito Polcompball Wiki, nel quale ne troverai la spiegazione (tuttavia, non tutte sono presenti sul sito).
+            </p>
+            <p>
+                Il test è formato da 72 domande totali ed è diviso in due assi. Per quanto riguarda i risultati, consigliamo 
+                di fare attenzione anche ai decimali, e non solo alla cifra intera, in quanto sono standardizzati e approssimati. 
+                I risultati possono uscire solo nelle seguenti forme: 0 - 0.25 - 0.50 - 0.75 ecc. Quindi in nessun caso potranno uscire 
+                risultati quali per esempio 7.10, 9.41, -2.99 ecc.
+            </p>
+            <p>
+                Il sistema dei risultati dei due assi si basa su una semplice equazione:<br>
+                massimo dei punti totalizzabili (80/100) : [punti totalizzati] = coordinata massima (10) : [corrispondente dei punti totalizzati sulle coordinate del compass]
+            </p>
+            <p>
+                Ogni domanda ha 7 possibili risposte (completamente d'accordo, d'accordo, parzialmente d'accordo, neutrale/dipende, parzialmente in disaccordo, in disaccordo, completamente in disaccordo; 
+                eccetto per le ultime domande, quelle trasversali, che hanno solo cinque possibili risposte: completamente in disaccordo (destra), disaccordo (destra), d'accordo, completamente in disaccordo (sinistra), 
+                disaccordo (sinistra), in modo tale che se si è di destra o di sinistra non ci si sposti dalla propria posizione) più un pulsante per tornare alla domanda precedente. 
+                È possibile inoltre consultare in alto a sinistra il numero della domanda a cui si sta rispondendo rispetto al totale.
+            </p>
+            <p>
+                Per far sì che le domande escano in un ordine casuale, sono state divise in cinque categorie:<br>
+                <b>Livello 1:</b> asse politico<br>
+                <b>Livello 2:</b> asse economico (riformista)<br>
+                <b>Livello 3:</b> asse economico (filosofico)<br>
+                <b>Livello 4:</b> asse economico (radicale)<br>
+                <b>Livello 5:</b> asse economico (centrista)<br>
+                I gruppi di domande si susseguono nel test in questo ordine, mentre all'interno di ogni gruppo le domande sono mescolate.
+            </p>
+            <p>
+                <b>Asse politico</b><br>
+                L'asse politico è l'asse verticale ed è formato da 30 domande. I punti che si possono raggiungere sono massimo 90 e -90. 
+                Tuttavia, per rendere più facile il raggiungimento degli estremi, il massimo di punti che si può accumulare è 80. 
+                (superata la soglia degli 80, i punti vengono sì addizionati, tuttavia in fase di conversione nel risultato finale non vengono considerati). 
+                Stessa cosa vale per l'opposto (-80, -90).
+            </p>
+            <p>
+                <b>Asse economico</b><br>
+                L'asse economico è l'asse orizzontale ed è formato da 42 domande, di cui 5 centriste e 5 terzoposizioniste. 
+                I punti massimi che si possono raggiungere sono 122 e -122. Per rendere più facile il raggiungimento degli estremi, il massimo numero che si può accumulare è 100. 
+                (superata la soglia dei 100, i punti vengono sì addizionati, tuttavia in fase di conversione nel risultato finale non vengono considerati). 
+                Stessa cosa vale per l'opposto (-100, -122).
+            </p>
+            <p>
+                <b>Domande trasversali</b><br>
+                Per le domande trasversali (centriste e terzoposizioniste), il sistema di punti è diverso. Queste domande servono per avvicinare al centro. 
+                L'utente che risponde "d'accordo" a uno dei dieci quesiti, dovrà essere spostato verso il centro. 
+                Ci si può spostare massimo di 20 punti verso il centro per il centrismo, e di 20 punti per il terzoposizionismo. 
+                Tuttavia, se un utente arriva a 100 o a -100, allora qualunque risposta alle domande trasversali non cambierà la sua posizione.
+            </p>
+        </div>
+
+        <button id="start-button" onclick="window.location.href='test.html'">Inizia il test</button>
+    </div>
+</body>
+</html>
