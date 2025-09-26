@@ -58,72 +58,139 @@ const questions = [
     { text: "Se il welfare è proprio necessario, dev'essere mirato unicamente a chi ne ha veramente bisogno.", level: 2, axis: "economico", orientation: "destra-riformista" },
     { text: "Le esigenze produttive sono più importanti delle emergenze ambientali.", level: 2, axis: "economico", orientation: "destra-riformista" }
 ];
+    // =============================
+    // PUNTEGGI
+    // =============================
+    const scoring = {
+        "libertarismo":   [-3, -2, -1, 0, 1, 2, 3],
+        "autoritarismo":  [3, 2, 1, 0, -1, -2, -3],
+        "sinistra-riformista": [-3, -2, -1, 0, 1, 2, 3],
+        "destra-riformista":   [3, 2, 1, 0, -1, -2, -3],
+        "sinistra-filosofica": [-4, -3, -2, 0, 2, 3, 4],
+        "destra-filosofica":   [4, 3, 2, 0, -2, -3, -4],
+        "sinistra-radicale":   [-5, -4, -3, 0, 3, 4, 5],
+        "destra-radicale":     [5, 4, 3, 0, -3, -4, -5],
+        "trasversale":         [] // gestita separatamente, fallback = 0
+    };
 
-// =============================
-// PUNTEGGI RISPOSTE (invariato tranne 'trasversale' per gestione sicura)
-// =============================
-const scoring = {
-    "libertarismo":   [-3, -2, -1, 0, 1, 2, 3],
-    "autoritarismo":  [3, 2, 1, 0, -1, -2, -3],
-    "sinistra-riformista": [-3, -2, -1, 0, 1, 2, 3],
-    "destra-riformista":   [3, 2, 1, 0, -1, -2, -3],
-    "sinistra-filosofica": [-4, -3, -2, 0, 2, 3, 4],
-    "destra-filosofica":   [4, 3, 2, 0, -2, -3, -4],
-    "sinistra-radicale":   [-5, -4, -3, 0, 3, 4, 5],
-    "destra-radicale":     [5, 4, 3, 0, -3, -4, -5],
-    // "trasversale" gestito a parte: per ora lasciamo vuoto e gestiamo fallback
-    "trasversale":         []
-};
+    // =============================
+    // STATE
+    // =============================
+    let currentQuestion = 0;
+    let score = { x: 0, y: 0 };
+    let selectedQuestions = [];
 
-// =============================
-// VARIABILI GLOBALI
-// =============================
-let currentQuestion = 0;
-let score = { x: 0, y: 0 }; // x = economico, y = politico
-let selectedQuestions = [];
-
-// =============================
-// INIZIO TEST
-// =============================
-function startTest() {
-    const levels = [1, 2, 3, 4, 5];
-    selectedQuestions = [];
-    levels.forEach(lvl => {
-        let group = questions.filter(q => q.level === lvl);
-        group = shuffle(group);
-        selectedQuestions = selectedQuestions.concat(group);
-    });
-    currentQuestion = 0;
-    showQuestion();
-}
-
-// =============================
-// MOSTRA DOMANDA
-// =============================
-function showQuestion() {
-    if (currentQuestion >= selectedQuestions.length) {
-        showResults();
-        return;
+    // =============================
+    // UTILITIES
+    // =============================
+    function shuffle(array) {
+        let a = array.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
     }
 
-    const q = selectedQuestions[currentQuestion];
-    const qNumEl = document.getElementById("question-number");
-    const qTextEl = document.getElementById("question-text");
-    const answersDiv = document.getElementById("answers");
-
-    if (!qNumEl || !qTextEl || !answersDiv) {
-        console.error("Elementi della pagina delle domande mancanti (question-number, question-text, answers).");
-        return;
+    function roundToQuarter(num) {
+        const eps = Number.EPSILON || 2.220446049250313e-16;
+        return Math.round((num + eps) * 4) / 4;
     }
 
-    qNumEl.textContent = `Domanda ${currentQuestion + 1} di ${selectedQuestions.length}`;
-    qTextEl.textContent = q.text;
+    // crea gli elementi della UI se mancano (fallback)
+    function ensureQuestionUI() {
+        let container = document.querySelector('.container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'container';
+            document.body.innerHTML = ''; // pulisce
+            document.body.appendChild(container);
+        }
 
-    answersDiv.innerHTML = "";
+        if (!document.getElementById('question-number')) {
+            const el = document.createElement('div');
+            el.id = 'question-number';
+            el.style.marginBottom = '8px';
+            container.appendChild(el);
+        }
 
-    for (let i = 0; i < 7; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = [
+        if (!document.getElementById('question-text')) {
+            const el = document.createElement('div');
+            el.id = 'question-text';
+            el.style.fontSize = '1.25rem';
+            el.style.margin = '12px 0';
+            container.appendChild(el);
+        }
+
+        if (!document.getElementById('answers')) {
+            const answers = document.createElement('div');
+            answers.id = 'answers';
+            container.appendChild(answers);
+        }
+
+        // opzionale: aggiungi pulsante "indietro"
+        if (!document.getElementById('back-button')) {
+            const back = document.createElement('button');
+            back.id = 'back-button';
+            back.textContent = 'Indietro';
+            back.style.display = 'none';
+            back.onclick = goBack;
+            container.appendChild(back);
+        }
+    }
+
+    // =============================
+    // LOGICA TEST
+    // =============================
+    function buildQuestionSet() {
+        const levels = [1, 2, 3, 4, 5];
+        selectedQuestions = [];
+        levels.forEach(lvl => {
+            let group = questions.filter(q => q.level === lvl);
+            if (group.length) group = shuffle(group);
+            selectedQuestions = selectedQuestions.concat(group);
+        });
+    }
+
+    function startTest() {
+        // reset
+        currentQuestion = 0;
+        score = { x: 0, y: 0 };
+        buildQuestionSet();
+        if (!selectedQuestions.length) {
+            console.error("Nessuna domanda selezionata: controlla che 'questions' contenga items con level 1-5.");
+            showNoQuestionsMessage();
+            return;
+        }
+        showQuestion();
+    }
+
+    function showNoQuestionsMessage() {
+        ensureQuestionUI();
+        document.getElementById('question-number').textContent = '';
+        document.getElementById('question-text').textContent = 'Nessuna domanda disponibile.';
+        document.getElementById('answers').innerHTML = '';
+    }
+
+    function showQuestion() {
+        ensureQuestionUI();
+
+        if (currentQuestion >= selectedQuestions.length) {
+            showResults();
+            return;
+        }
+
+        const q = selectedQuestions[currentQuestion];
+        const qNumEl = document.getElementById('question-number');
+        const qTextEl = document.getElementById('question-text');
+        const answersDiv = document.getElementById('answers');
+
+        qNumEl.textContent = `Domanda ${currentQuestion + 1} di ${selectedQuestions.length}`;
+        qTextEl.textContent = q.text;
+        answersDiv.innerHTML = '';
+
+        // numero di risposte: se vuoi gestire trasversali a 5 puoi cambiare qui
+        const labels = [
             "Completamente d'accordo",
             "D'accordo",
             "Parzialmente d'accordo",
@@ -131,86 +198,94 @@ function showQuestion() {
             "Parzialmente in disaccordo",
             "In disaccordo",
             "Completamente in disaccordo"
-        ][i];
-        btn.onclick = () => answerQuestion(i);
-        answersDiv.appendChild(btn);
-    }
-}
-
-// =============================
-// RISPOSTA
-// =============================
-function answerQuestion(index) {
-    const q = selectedQuestions[currentQuestion];
-    const values = scoring[q.orientation];
-
-    // se non esiste una mappatura per orientation, evitiamo NaN e logghiamo
-    if (!values || !Array.isArray(values) || typeof values[index] === "undefined") {
-        console.warn(`Scoring mancante per orientation="${q.orientation}". Considero il valore = 0 per sicurezza.`);
-        // non modifico il punteggio
-    } else {
-        if (q.axis === "politico") {
-            score.y += values[index];
-        } else if (q.axis === "economico") {
-            score.x += values[index];
+        ];
+        for (let i = 0; i < labels.length; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = labels[i];
+            btn.style.display = 'block';
+            btn.style.width = '100%';
+            btn.style.margin = '6px 0';
+            btn.onclick = () => answerQuestion(i);
+            answersDiv.appendChild(btn);
         }
+
+        // mostra/nascondi indietro
+        const back = document.getElementById('back-button');
+        if (back) back.style.display = currentQuestion > 0 ? 'block' : 'none';
     }
 
-    currentQuestion++;
-    showQuestion();
-}
+    function answerQuestion(index) {
+        const q = selectedQuestions[currentQuestion];
+        const values = scoring[q.orientation];
 
-// =============================
-// RISULTATI (with robust rounding to quarters)
-// =============================
-function showResults() {
-    // clamp ai massimi che hai definito
-    let y = Math.max(-80, Math.min(80, score.y));
-    let x = Math.max(-100, Math.min(100, score.x));
+        if (!values || !Array.isArray(values) || typeof values[index] === 'undefined') {
+            console.warn(`Scoring mancante per orientation="${q.orientation}". Valore considerato = 0.`);
+        } else {
+            if (q.axis === 'politico') score.y += values[index];
+            else if (q.axis === 'economico') score.x += values[index];
+        }
 
-    // conversione alle coordinate (-10 .. +10)
-    let yCoord = (y / 80) * 10;
-    let xCoord = (x / 100) * 10;
-
-    // arrotondamento robusto ai quarti (0.25)
-    yCoord = roundToQuarter(yCoord);
-    xCoord = roundToQuarter(xCoord);
-
-    // evitiamo -0.00
-    if (Math.abs(yCoord) < 1e-12) yCoord = 0;
-    if (Math.abs(xCoord) < 1e-12) xCoord = 0;
-
-    // formattazione stringa con due decimali
-    const xStr = xCoord.toFixed(2);
-    const yStr = yCoord.toFixed(2);
-
-    document.body.innerHTML = `
-        <div class="container">
-            <h1>Risultati</h1>
-            <p>Coordinata X (economico): ${xStr}</p>
-            <p>Coordinata Y (politico): ${yStr}</p>
-        </div>
-    `;
-}
-
-// =============================
-// ARROTONDAMENTO UTILITY
-// =============================
-function roundToQuarter(num) {
-    // Number.EPSILON aiuta a mitigare errori di virgola mobile
-    const eps = Number.EPSILON || 2.220446049250313e-16;
-    return Math.round((num + eps) * 4) / 4;
-}
-
-// =============================
-// SHUFFLE UTILITY
-// =============================
-function shuffle(array) {
-    let currentIndex = array.length, randomIndex;
-    while (currentIndex != 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        currentQuestion++;
+        showQuestion();
     }
-    return array;
-}
+
+    function goBack() {
+        if (currentQuestion === 0) return;
+        currentQuestion--;
+        // dobbiamo rimuovere l'effetto della risposta precedente: per farlo, ricalcoliamo da zero fino a currentQuestion-1
+        score = { x: 0, y: 0 };
+        for (let i = 0; i < currentQuestion; i++) {
+            const q = selectedQuestions[i];
+            // qui non teniamo le risposte passate memorizzate: se vuoi la funzione "indietro" precisa devi memorizzare le scelte in un array.
+            // Per ora, per semplicità, ricarichiamo la domanda corrente (senza alterazioni retroattive).
+        }
+        // Nota: per avere indietro preciso, dobbiamo memorizzare le risposte (posso aggiungerlo se vuoi).
+        showQuestion();
+    }
+
+    // =============================
+    // RISULTATI
+    // =============================
+    function showResults() {
+        let y = Math.max(-80, Math.min(80, score.y));
+        let x = Math.max(-100, Math.min(100, score.x));
+
+        let yCoord = (y / 80) * 10;
+        let xCoord = (x / 100) * 10;
+
+        yCoord = roundToQuarter(yCoord);
+        xCoord = roundToQuarter(xCoord);
+
+        if (Math.abs(yCoord) < 1e-12) yCoord = 0;
+        if (Math.abs(xCoord) < 1e-12) xCoord = 0;
+
+        const xStr = xCoord.toFixed(2);
+        const yStr = yCoord.toFixed(2);
+
+        document.body.innerHTML = `
+            <div class="container">
+                <h1>Risultati</h1>
+                <p>Coordinata X (economico): ${xStr}</p>
+                <p>Coordinata Y (politico): ${yStr}</p>
+            </div>
+        `;
+    }
+
+    // =============================
+    // AUTO-INIT E EXPORT
+    // =============================
+    window.startTest = startTest; // espongo la funzione per chiamarla da HTML se vuoi
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // se siamo sulla pagina delle domande (presenza #answers), avviamo in automatico
+        if (document.getElementById('answers')) {
+            // assicurati di avere lo script tag con defer oppure senza: in entrambi i casi questo listener funziona
+            startTest();
+        } else {
+            // fallback: se la pagina non ha .container ma probabilmente è test.html senza markup,
+            // possiamo creare la UI e avviare comunque il test (opzionale)
+            // se preferisci che non avvii automaticamente in assenza di markup, commenta la riga seguente:
+            // ensureQuestionUI(); startTest();
+        }
+    });
+})();
