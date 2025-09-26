@@ -288,4 +288,3 @@ const questions = [
             // ensureQuestionUI(); startTest();
         }
     });
-})();
