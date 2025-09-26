@@ -158,6 +158,10 @@ function showResults() {
     let yCoord = (y / 80) * 10;
     let xCoord = (x / 100) * 10;
 
+    // Arrotondiamo ai quarti (0.25)
+    yCoord = roundToQuarter(yCoord);
+    xCoord = roundToQuarter(xCoord);
+
     document.body.innerHTML = `
         <div class="container">
             <h1>Risultati</h1>
@@ -165,6 +169,13 @@ function showResults() {
             <p>Coordinata Y (politico): ${yCoord.toFixed(2)}</p>
         </div>
     `;
+}
+
+// =============================
+// UTILITY
+// =============================
+function roundToQuarter(num) {
+    return Math.round(num * 4) / 4;
 }
 
 // =============================
