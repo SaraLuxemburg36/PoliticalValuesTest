@@ -60,17 +60,6 @@ const questions = [
 ];
 
 // =============================
-// STRUTTURA DOMANDE (invariata)
-// =============================
-const questions = [
-    // ... (mantieni qui tutte le domande che hai già) ...
-    // per brevità qui riporto solo un esempio: copia/incolla le tue domande complete
-    { text: "Il corpo di ciascun individuo è sua proprietà e nessuno può disporne al suo posto.", level: 1, axis: "politico", orientation: "libertarismo" },
-    { text: "L'autonomia del corpo si estende a tutti, compresi i portatori di disabilità, i criminali e i minori.", level: 1, axis: "politico", orientation: "libertarismo" },
-    // ... (tutte le altre domande) ...
-];
-
-// =============================
 // PUNTEGGI RISPOSTE (invariato tranne 'trasversale' per gestione sicura)
 // =============================
 const scoring = {
