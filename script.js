@@ -60,10 +60,19 @@ const questions = [
 ];
 
 // =============================
-// PUNTEGGI RISPOSTE
+// STRUTTURA DOMANDE (invariata)
 // =============================
+const questions = [
+    // ... (mantieni qui tutte le domande che hai già) ...
+    // per brevità qui riporto solo un esempio: copia/incolla le tue domande complete
+    { text: "Il corpo di ciascun individuo è sua proprietà e nessuno può disporne al suo posto.", level: 1, axis: "politico", orientation: "libertarismo" },
+    { text: "L'autonomia del corpo si estende a tutti, compresi i portatori di disabilità, i criminali e i minori.", level: 1, axis: "politico", orientation: "libertarismo" },
+    // ... (tutte le altre domande) ...
+];
 
-// Set di pesi per ogni orientamento
+// =============================
+// PUNTEGGI RISPOSTE (invariato tranne 'trasversale' per gestione sicura)
+// =============================
 const scoring = {
     "libertarismo":   [-3, -2, -1, 0, 1, 2, 3],
     "autoritarismo":  [3, 2, 1, 0, -1, -2, -3],
@@ -73,7 +82,8 @@ const scoring = {
     "destra-filosofica":   [4, 3, 2, 0, -2, -3, -4],
     "sinistra-radicale":   [-5, -4, -3, 0, 3, 4, 5],
     "destra-radicale":     [5, 4, 3, 0, -3, -4, -5],
-    "trasversale":         [/* verrà gestito a parte */]
+    // "trasversale" gestito a parte: per ora lasciamo vuoto e gestiamo fallback
+    "trasversale":         []
 };
 
 // =============================
@@ -87,7 +97,6 @@ let selectedQuestions = [];
 // INIZIO TEST
 // =============================
 function startTest() {
-    // Ordiniamo per livello
     const levels = [1, 2, 3, 4, 5];
     selectedQuestions = [];
     levels.forEach(lvl => {
@@ -109,10 +118,18 @@ function showQuestion() {
     }
 
     const q = selectedQuestions[currentQuestion];
-    document.getElementById("question-number").textContent = `Domanda ${currentQuestion + 1} di ${selectedQuestions.length}`;
-    document.getElementById("question-text").textContent = q.text;
-
+    const qNumEl = document.getElementById("question-number");
+    const qTextEl = document.getElementById("question-text");
     const answersDiv = document.getElementById("answers");
+
+    if (!qNumEl || !qTextEl || !answersDiv) {
+        console.error("Elementi della pagina delle domande mancanti (question-number, question-text, answers).");
+        return;
+    }
+
+    qNumEl.textContent = `Domanda ${currentQuestion + 1} di ${selectedQuestions.length}`;
+    qTextEl.textContent = q.text;
+
     answersDiv.innerHTML = "";
 
     for (let i = 0; i < 7; i++) {
@@ -138,10 +155,16 @@ function answerQuestion(index) {
     const q = selectedQuestions[currentQuestion];
     const values = scoring[q.orientation];
 
-    if (q.axis === "politico") {
-        score.y += values[index];
-    } else if (q.axis === "economico") {
-        score.x += values[index];
+    // se non esiste una mappatura per orientation, evitiamo NaN e logghiamo
+    if (!values || !Array.isArray(values) || typeof values[index] === "undefined") {
+        console.warn(`Scoring mancante per orientation="${q.orientation}". Considero il valore = 0 per sicurezza.`);
+        // non modifico il punteggio
+    } else {
+        if (q.axis === "politico") {
+            score.y += values[index];
+        } else if (q.axis === "economico") {
+            score.x += values[index];
+        }
     }
 
     currentQuestion++;
@@ -149,37 +172,49 @@ function answerQuestion(index) {
 }
 
 // =============================
-// RISULTATI
+// RISULTATI (with robust rounding to quarters)
 // =============================
 function showResults() {
+    // clamp ai massimi che hai definito
     let y = Math.max(-80, Math.min(80, score.y));
     let x = Math.max(-100, Math.min(100, score.x));
 
+    // conversione alle coordinate (-10 .. +10)
     let yCoord = (y / 80) * 10;
     let xCoord = (x / 100) * 10;
 
-    // Arrotondiamo ai quarti (0.25)
+    // arrotondamento robusto ai quarti (0.25)
     yCoord = roundToQuarter(yCoord);
     xCoord = roundToQuarter(xCoord);
+
+    // evitiamo -0.00
+    if (Math.abs(yCoord) < 1e-12) yCoord = 0;
+    if (Math.abs(xCoord) < 1e-12) xCoord = 0;
+
+    // formattazione stringa con due decimali
+    const xStr = xCoord.toFixed(2);
+    const yStr = yCoord.toFixed(2);
 
     document.body.innerHTML = `
         <div class="container">
             <h1>Risultati</h1>
-            <p>Coordinata X (economico): ${xCoord.toFixed(2)}</p>
-            <p>Coordinata Y (politico): ${yCoord.toFixed(2)}</p>
+            <p>Coordinata X (economico): ${xStr}</p>
+            <p>Coordinata Y (politico): ${yStr}</p>
         </div>
     `;
 }
 
 // =============================
-// UTILITY
+// ARROTONDAMENTO UTILITY
 // =============================
 function roundToQuarter(num) {
-    return Math.round(num * 4) / 4;
+    // Number.EPSILON aiuta a mitigare errori di virgola mobile
+    const eps = Number.EPSILON || 2.220446049250313e-16;
+    return Math.round((num + eps) * 4) / 4;
 }
 
 // =============================
-// UTILITY
+// SHUFFLE UTILITY
 // =============================
 function shuffle(array) {
     let currentIndex = array.length, randomIndex;
