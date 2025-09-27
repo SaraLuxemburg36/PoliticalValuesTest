@@ -127,3 +127,11 @@ button:hover {
 #answers button:nth-child(5) { background-color: #ff9800; }
 #answers button:nth-child(6) { background-color: #f44336; }
 #answers button:nth-child(7) { background-color: #d32f2f; }
+
+/* styles per il caso in cui #answers abbia la classe .five (5 pulsanti trasversali) */
+#answers.five button:nth-child(1) { background-color: #4caf50; } /* D'accordo - verde */
+#answers.five button:nth-child(2) { background-color: #ff9800; } /* In disaccordo (destra) - arancio */
+#answers.five button:nth-child(3) { background-color: #ffb74d; } /* In disaccordo (sinistra) - arancio chiaro */
+#answers.five button:nth-child(4) { background-color: #f44336; } /* Completo disaccordo (destra) - rosso */
+#answers.five button:nth-child(5) { background-color: #d32f2f; } /* Completo disaccordo (sinistra) - rosso scuro */
+
