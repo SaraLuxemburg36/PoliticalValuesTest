@@ -57,7 +57,51 @@ const questions = [
     { text: "Le politiche economiche devono premiare il merito e l’iniziativa individuale.", level: 2, axis: "economico", orientation: "destra-riformista" },
     { text: "Se il welfare è proprio necessario, dev'essere mirato unicamente a chi ne ha veramente bisogno.", level: 2, axis: "economico", orientation: "destra-riformista" },
     { text: "Le esigenze produttive sono più importanti delle emergenze ambientali.", level: 2, axis: "economico", orientation: "destra-riformista" }
+    
+    // =====================
+    // LIVELLO 3 - ECONOMICO (FILOSOFICO)
+    // =====================
+    { text: "Da ognuno secondo le sue capacità, a ognuno secondo i suoi bisogni.", level: 3, axis: "economico", orientation: "sinistra-filosofica" },
+    { text: "Il valore di una società si misura da come tratta i più deboli.", level: 3, axis: "economico", orientation: "sinistra-filosofica" },
+    { text: "Nessuna ricchezza è legittima se nasce dallo sfruttamento.", level: 3, axis: "economico", orientation: "sinistra-filosofica" },
+    { text: "Chi accumula troppa ricchezza, accumula potere. Il potere divide.", level: 3, axis: "economico", orientation: "sinistra-filosofica" },
+    { text: "La storia di ogni società esistita finora è la storia di lotte di classe.", level: 3, axis: "economico", orientation: "sinistra-filosofica" },
+
+    { text: "La libertà di impresa è il modo più efficiente per lo sviluppo della società.", level: 3, axis: "economico", orientation: "destra-filosofica" },
+    { text: "Seppure il capitalismo fosse imperfetto, rimarrebbe il sistema migliore.", level: 3, axis: "economico", orientation: "destra-filosofica" },
+    { text: "L'uguaglianza economica assoluta è contro natura.", level: 3, axis: "economico", orientation: "destra-filosofica" },
+    { text: "Il comunismo è un ideale che non potrebbe mai funzionare nella pratica.", level: 3, axis: "economico", orientation: "destra-filosofica" },
+    { text: "L'umanità trae maggior beneficio dal permettere a ciascuno di vivere come ritiene giusto, piuttosto che costringere ciascuno a vivere come ritengono giusto gli altri.", level: 3, axis: "economico", orientation: "destra-filosofica" },
+
+    // =====================
+    // LIVELLO 4 - ECONOMICO (RADICALE)
+    // =====================
+    { text: "Bisogna abolire la proprietà privata.", level: 4, axis: "economico", orientation: "sinistra-radicale" },
+    { text: "Seppure gli esperimenti socialisti del passato avessero fallito, non bisognerebbe comunque abbandonare l'idea di un cambiamento radicale della società.", level: 4, axis: "economico", orientation: "sinistra-radicale" },
+    { text: "L'autogestione dei lavoratori sui luoghi di lavoro è necessaria per una società realmente democratica.", level: 4, axis: "economico", orientation: "sinistra-radicale" },
+    { text: "La rivoluzione è necessaria per un vero cambiamento della società.", level: 4, axis: "economico", orientation: "sinistra-radicale" },
+
+    { text: "La proprietà privata è un diritto naturale dell'uomo.", level: 4, axis: "economico", orientation: "destra-radicale" },
+    { text: "Il mercato si autoregola.", level: 4, axis: "economico", orientation: "destra-radicale" },
+    { text: "La libertà economica è inviolabile.", level: 4, axis: "economico", orientation: "destra-radicale" },
+    { text: "La privatizzazione totale di ogni aspetto della vita è auspicabile.", level: 4, axis: "economico", orientation: "destra-radicale" },
+
+    // =====================
+    // LIVELLO 5 - ECONOMICO (TRASVERSALE)
+    // =====================
+    { text: "Bisogna creare un terzo polo liberale trasversale che si opponga sia alla destra che alla sinistra.", level: 5, axis: "economico", orientation: "trasversale" },
+    { text: "Nessun estremismo è mai giustificato.", level: 5, axis: "economico", orientation: "trasversale" },
+    { text: "La stabilità nasce dall'equilibrio tra mercato e Stato.", level: 5, axis: "economico", orientation: "trasversale" },
+    { text: "Le decisioni politiche devono essere guidate dal buon senso, non dall’ideologia.", level: 5, axis: "economico", orientation: "trasversale" },
+    { text: "Bisogna tornare ai valori del liberalismo classico elaborato dagli illuministi.", level: 5, axis: "economico", orientation: "trasversale" },
+
+    { text: "Bisogna superare la lotta tra classi in favore della collaborazione.", level: 5, axis: "economico", orientation: "trasversale" },
+    { text: "Credo nel concetto della democrazia organica.", level: 5, axis: "economico", orientation: "trasversale" },
+    { text: "Sia il socialismo che il capitalismo hanno fallito: serve una terza posizione.", level: 5, axis: "economico", orientation: "trasversale" },
+    { text: "I sindacati dovrebbero essere sostituiti dalle corporazioni.", level: 5, axis: "economico", orientation: "trasversale" },
+    { text: "Bisogna mettere da parte le ideologie e concentrarsi sul bene della nazione.", level: 5, axis: "economico", orientation: "trasversale" }
 ];
+
     // =============================
     // PUNTEGGI
     // =============================
@@ -215,19 +259,45 @@ const questions = [
     }
 
     function answerQuestion(index) {
-        const q = selectedQuestions[currentQuestion];
-        const values = scoring[q.orientation];
+    const q = selectedQuestions[currentQuestion];
 
+    if (q.orientation === "trasversale") {
+        // Gestione speciale delle domande trasversali
+        // index: 0 = Completamente d'accordo, 1 = D'accordo, ... 6 = Completamente in disaccordo
+        // Puoi anche personalizzare le label per queste domande
+
+        if (index === 1) {
+            // D'accordo → sposta di ±4 verso il centro
+            if (score.x > 0) score.x -= 4;
+            else if (score.x < 0) score.x += 4;
+        } else if (index === 2) {
+            // Parzialmente d'accordo → sposta di ±2 verso il centro
+            if (score.x > 0) score.x -= 2;
+            else if (score.x < 0) score.x += 2;
+        } else if (index === 4) {
+            // Parzialmente in disaccordo → sposta di ±2 verso il centro
+            if (score.x > 0) score.x -= 2;
+            else if (score.x < 0) score.x += 2;
+        } else if (index === 5) {
+            // In disaccordo → sposta di ±4 verso il centro
+            if (score.x > 0) score.x -= 4;
+            else if (score.x < 0) score.x += 4;
+        }
+        // Completamente d'accordo (0) e completamente in disaccordo (6) non muovono nulla
+    } else {
+        // Logica standard
+        const values = scoring[q.orientation];
         if (!values || !Array.isArray(values) || typeof values[index] === 'undefined') {
             console.warn(`Scoring mancante per orientation="${q.orientation}". Valore considerato = 0.`);
         } else {
             if (q.axis === 'politico') score.y += values[index];
             else if (q.axis === 'economico') score.x += values[index];
         }
-
-        currentQuestion++;
-        showQuestion();
     }
+
+    currentQuestion++;
+    showQuestion();
+}
 
     function goBack() {
         if (currentQuestion === 0) return;
