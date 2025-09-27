@@ -56,7 +56,7 @@ const questions = [
     { text: "Incentivare la concorrenza tra imprese porta a prodotti migliori e a più innovazione.", level: 2, axis: "economico", orientation: "destra-riformista" },
     { text: "Le politiche economiche devono premiare il merito e l’iniziativa individuale.", level: 2, axis: "economico", orientation: "destra-riformista" },
     { text: "Se il welfare è proprio necessario, dev'essere mirato unicamente a chi ne ha veramente bisogno.", level: 2, axis: "economico", orientation: "destra-riformista" },
-    { text: "Le esigenze produttive sono più importanti delle emergenze ambientali.", level: 2, axis: "economico", orientation: "destra-riformista" }
+    { text: "Le esigenze produttive sono più importanti delle emergenze ambientali.", level: 2, axis: "economico", orientation: "destra-riformista" },
     
     // =====================
     // LIVELLO 3 - ECONOMICO (FILOSOFICO)
