@@ -86,21 +86,30 @@ const questions = [
     { text: "La libertà economica è inviolabile.", level: 4, axis: "economico", orientation: "destra-radicale" },
     { text: "La privatizzazione totale di ogni aspetto della vita è auspicabile.", level: 4, axis: "economico", orientation: "destra-radicale" },
 
-    // =====================
-    // LIVELLO 5 - ECONOMICO (TRASVERSALE)
-    // =====================
-    { text: "Bisogna creare un terzo polo liberale trasversale che si opponga sia alla destra che alla sinistra.", level: 5, axis: "economico", orientation: "trasversale" },
-    { text: "Nessun estremismo è mai giustificato.", level: 5, axis: "economico", orientation: "trasversale" },
-    { text: "La stabilità nasce dall'equilibrio tra mercato e Stato.", level: 5, axis: "economico", orientation: "trasversale" },
-    { text: "Le decisioni politiche devono essere guidate dal buon senso, non dall’ideologia.", level: 5, axis: "economico", orientation: "trasversale" },
-    { text: "Bisogna tornare ai valori del liberalismo classico elaborato dagli illuministi.", level: 5, axis: "economico", orientation: "trasversale" },
+   // =====================
+// LIVELLO 5 - ECONOMICO (TRASVERSALE)
+// =====================
+// prime 5 = Centrismo
+{ text: "Bisogna creare un terzo polo liberale trasversale che si opponga sia alla destra che alla sinistra.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
+{ text: "Nessun estremismo è mai giustificato.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
+{ text: "La stabilità nasce dall'equilibrio tra mercato e Stato.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
+{ text: "Le decisioni politiche devono essere guidate dal buon senso, non dall’ideologia.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
+{ text: "Bisogna tornare ai valori del liberalismo classico elaborato dagli illuministi.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
 
-    { text: "Bisogna superare la lotta tra classi in favore della collaborazione.", level: 5, axis: "economico", orientation: "trasversale" },
-    { text: "Credo nel concetto della democrazia organica.", level: 5, axis: "economico", orientation: "trasversale" },
-    { text: "Sia il socialismo che il capitalismo hanno fallito: serve una terza posizione.", level: 5, axis: "economico", orientation: "trasversale" },
-    { text: "I sindacati dovrebbero essere sostituiti dalle corporazioni.", level: 5, axis: "economico", orientation: "trasversale" },
-    { text: "Bisogna mettere da parte le ideologie e concentrarsi sul bene della nazione.", level: 5, axis: "economico", orientation: "trasversale" }
-];
+// successive 5 = Terzoposizionismo
+{ text: "Bisogna superare la lotta tra classi in favore della collaborazione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
+{ text: "Credo nel concetto della democrazia organica.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
+{ text: "Sia il socialismo che il capitalismo hanno fallito: serve una terza posizione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
+{ text: "I sindacati dovrebbero essere sostituiti dalle corporazioni.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
+{ text: "Bisogna mettere da parte le ideologie e concentrarsi sul bene della nazione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" }
+
+
+// contatori per quanto è già stato spostato verso il centro da domande trasversali
+// misurano i punti TOTALE già spostati verso il centro per ciascun sottotipo (max 20)
+let transverseMoved = {
+  centrismo: 0,
+  terzoposizionismo: 0
+};
 
     // =============================
     // PUNTEGGI
@@ -216,24 +225,45 @@ const questions = [
         document.getElementById('answers').innerHTML = '';
     }
 
-    function showQuestion() {
-        ensureQuestionUI();
+   function showQuestion() {
+    ensureQuestionUI();
 
-        if (currentQuestion >= selectedQuestions.length) {
-            showResults();
-            return;
+    if (currentQuestion >= selectedQuestions.length) {
+        showResults();
+        return;
+    }
+
+    const q = selectedQuestions[currentQuestion];
+    const qNumEl = document.getElementById('question-number');
+    const qTextEl = document.getElementById('question-text');
+    const answersDiv = document.getElementById('answers');
+
+    qNumEl.textContent = `Domanda ${currentQuestion + 1} di ${selectedQuestions.length}`;
+    qTextEl.textContent = q.text;
+    answersDiv.innerHTML = '';
+
+    // se è una domanda trasversale, usiamo 5 pulsanti specifici
+    if (q.orientation === 'trasversale') {
+        answersDiv.classList.add('five');
+        const labels5 = [
+            "D'accordo",
+            "In disaccordo (destra)",
+            "In disaccordo (sinistra)",
+            "Completamente in disaccordo (destra)",
+            "Completamente in disaccordo (sinistra)"
+        ];
+        for (let i = 0; i < labels5.length; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = labels5[i];
+            btn.style.display = 'block';
+            btn.style.width = '100%';
+            btn.style.margin = '6px 0';
+            btn.onclick = () => answerQuestionTransverse(i, q);
+            answersDiv.appendChild(btn);
         }
-
-        const q = selectedQuestions[currentQuestion];
-        const qNumEl = document.getElementById('question-number');
-        const qTextEl = document.getElementById('question-text');
-        const answersDiv = document.getElementById('answers');
-
-        qNumEl.textContent = `Domanda ${currentQuestion + 1} di ${selectedQuestions.length}`;
-        qTextEl.textContent = q.text;
-        answersDiv.innerHTML = '';
-
-        // numero di risposte: se vuoi gestire trasversali a 5 puoi cambiare qui
+    } else {
+        // domande standard: 7 pulsanti
+        answersDiv.classList.remove('five');
         const labels = [
             "Completamente d'accordo",
             "D'accordo",
@@ -252,11 +282,12 @@ const questions = [
             btn.onclick = () => answerQuestion(i);
             answersDiv.appendChild(btn);
         }
-
-        // mostra/nascondi indietro
-        const back = document.getElementById('back-button');
-        if (back) back.style.display = currentQuestion > 0 ? 'block' : 'none';
     }
+
+    // mostra/nascondi indietro
+    const back = document.getElementById('back-button');
+    if (back) back.style.display = currentQuestion > 0 ? 'block' : 'none';
+}
 
     function answerQuestion(index) {
     const q = selectedQuestions[currentQuestion];
@@ -295,6 +326,72 @@ const questions = [
         }
     }
 
+    currentQuestion++;
+    showQuestion();
+}
+
+function answerQuestionTransverse(index, q) {
+    // q.subtype deve essere "centrismo" o "terzoposizionismo"
+    const subtype = q.subtype || 'centrismo';
+
+    // helper: muovi verso il centro riducendo |x|, senza oltrepassare 0, e con cap cumulativo di 20
+    function moveTowardCenter(amount) {
+        // quanto è ancora possibile spostare per questo subtype
+        const remaining = 20 - Math.abs(transverseMoved[subtype] || 0);
+        if (remaining <= 0) return 0; // non si può più spostare
+        const actual = Math.min(Math.abs(amount), remaining);
+
+        if (score.x > 0) {
+            // riduci valore positivo
+            const newX = score.x - actual;
+            // non oltrepassare zero
+            score.x = newX < 0 ? 0 : newX;
+        } else if (score.x < 0) {
+            // aumenta (verso 0) il valore negativo
+            const newX = score.x + actual;
+            score.x = newX > 0 ? 0 : newX;
+        } else {
+            // già zero: niente da fare
+        }
+        // conto i punti VALIDI spostati verso il centro (somma assoluta)
+        transverseMoved[subtype] = (transverseMoved[subtype] || 0) + actual;
+        return actual;
+    }
+
+    // index mapping per i 5 pulsanti:
+    // 0 = D'accordo  -> sposta verso centro di 4
+    // 1 = In disaccordo (destra) -> se sei a sinistra (x<0) ti avvicina di 2, se sei a destra (x>0) ti allontana di 2
+    // 2 = In disaccordo (sinistra) -> se sei a destra (x>0) ti avvicina di 2, se sei a sinistra (x<0) ti allontana di 2
+    // 3 = Completamente in disaccordo (destra) -> 0 (nessuna variazione)
+    // 4 = Completamente in disaccordo (sinistra) -> 0 (nessuna variazione)
+
+    if (index === 0) {
+        // D'accordo: muovi verso centro di 4 (cap 20)
+        moveTowardCenter(4);
+    } else if (index === 1) {
+        // In disaccordo (destra)
+        if (score.x < 0) {
+            // sei a sinistra: avvicina al centro di 2
+            moveTowardCenter(2);
+        } else if (score.x > 0) {
+            // sei a destra: allontana ulteriormente di 2 (ma rispetta clamp +/-100)
+            score.x = Math.max(-100, Math.min(100, score.x + 2));
+        }
+    } else if (index === 2) {
+        // In disaccordo (sinistra)
+        if (score.x > 0) {
+            // sei a destra: avvicina al centro di 2
+            moveTowardCenter(2);
+        } else if (score.x < 0) {
+            // sei a sinistra: allontana ulteriormente di 2 verso sinistra
+            score.x = Math.max(-100, Math.min(100, score.x - 2));
+        }
+    } else if (index === 3 || index === 4) {
+        // Completamente in disaccordo (destra/sinistra): nessuna variazione (0)
+        // (segue la tua specifica: 0)
+    }
+
+    // avanti con la domanda successiva
     currentQuestion++;
     showQuestion();
 }
