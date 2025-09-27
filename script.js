@@ -87,22 +87,22 @@ const questions = [
     { text: "La privatizzazione totale di ogni aspetto della vita è auspicabile.", level: 4, axis: "economico", orientation: "destra-radicale" },
 
    // =====================
-// LIVELLO 5 - ECONOMICO (TRASVERSALE)
-// =====================
-// prime 5 = Centrismo
-{ text: "Bisogna creare un terzo polo liberale trasversale che si opponga sia alla destra che alla sinistra.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
-{ text: "Nessun estremismo è mai giustificato.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
-{ text: "La stabilità nasce dall'equilibrio tra mercato e Stato.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
-{ text: "Le decisioni politiche devono essere guidate dal buon senso, non dall’ideologia.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
-{ text: "Bisogna tornare ai valori del liberalismo classico elaborato dagli illuministi.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
+   // LIVELLO 5 - ECONOMICO (TRASVERSALE)
+   // =====================
+   // prime 5 = Centrismo
+   { text: "Bisogna creare un terzo polo liberale trasversale che si opponga sia alla destra che alla sinistra.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
+   { text: "Nessun estremismo è mai giustificato.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
+   { text: "La stabilità nasce dall'equilibrio tra mercato e Stato.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
+   { text: "Le decisioni politiche devono essere guidate dal buon senso, non dall’ideologia.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
+   { text: "Bisogna tornare ai valori del liberalismo classico elaborato dagli illuministi.", level: 5, axis: "economico", orientation: "trasversale", subtype: "centrismo" },
 
-// successive 5 = Terzoposizionismo
-{ text: "Bisogna superare la lotta tra classi in favore della collaborazione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
-{ text: "Credo nel concetto della democrazia organica.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
-{ text: "Sia il socialismo che il capitalismo hanno fallito: serve una terza posizione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
-{ text: "I sindacati dovrebbero essere sostituiti dalle corporazioni.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
-{ text: "Bisogna mettere da parte le ideologie e concentrarsi sul bene della nazione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" }
-
+   // successive 5 = Terzoposizionismo
+   { text: "Bisogna superare la lotta tra classi in favore della collaborazione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
+   { text: "Credo nel concetto della democrazia organica.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
+   { text: "Sia il socialismo che il capitalismo hanno fallito: serve una terza posizione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
+   { text: "I sindacati dovrebbero essere sostituiti dalle corporazioni.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
+   { text: "Bisogna mettere da parte le ideologie e concentrarsi sul bene della nazione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" }
+];
 
 // contatori per quanto è già stato spostato verso il centro da domande trasversali
 // misurano i punti TOTALE già spostati verso il centro per ciascun sottotipo (max 20)
