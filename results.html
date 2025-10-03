@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Risultati - Political Compass</title>
+  <style>
+    body {
+      background-color: #e0e0e0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    canvas {
+      border: 2px solid #333;
+      background-color: white;
+    }
+
+    #download-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>I tuoi risultati</h1>
+  <canvas id="compass" width="500" height="500"></canvas>
+  <button id="download-btn">Scarica immagine</button>
+
+  <script>
+    // Coordinate dell'utente (esempio: x = -4, y = 6)
+    // --> in futuro queste arriveranno dai calcoli nello script
+    const userX = -4;  // asse economico
+    const userY = 6;   // asse politico
+
+    const canvas = document.getElementById("compass");
+    const ctx = canvas.getContext("2d");
+
+    const size = canvas.width; // 500
+    const center = size / 2;
+
+    // Disegna i quadranti con colori
+    ctx.fillStyle = "#d1e7dd"; // sinistra libertaria (verde chiaro)
+    ctx.fillRect(0, center, center, center);
+    ctx.fillStyle = "#f8d7da"; // destra autoritaria (rosso chiaro)
+    ctx.fillRect(center, 0, center, center);
+    ctx.fillStyle = "#cff4fc"; // destra libertaria (azzurro chiaro)
+    ctx.fillRect(center, center, center, center);
+    ctx.fillStyle = "#fff3cd"; // sinistra autoritaria (giallo chiaro)
+    ctx.fillRect(0, 0, center, center);
+
+    // Disegna gli assi
+    ctx.strokeStyle = "#000";
+    ctx.beginPath();
+    ctx.moveTo(center, 0);
+    ctx.lineTo(center, size);
+    ctx.moveTo(0, center);
+    ctx.lineTo(size, center);
+    ctx.stroke();
+
+    // Normalizza coordinate (es. range -10 / +10 → canvas 500px)
+    const scale = center / 10; // 10 = max punteggio
+    const plotX = center + userX * scale;
+    const plotY = center - userY * scale; // invertito perché Y cresce verso il basso
+
+    // Disegna il punto dell'utente
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.arc(plotX, plotY, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bottone per scaricare l'immagine
+    document.getElementById("download-btn").addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = "political_compass.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  </script>
+</body>
+</html>
