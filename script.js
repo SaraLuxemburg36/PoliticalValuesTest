@@ -76,7 +76,7 @@ const questions = [
     // =====================
     // LIVELLO 4 - ECONOMICO (RADICALE)
     // =====================
-    { text: "Bisogna abolire la proprietà privata.", level: 4, axis: "economico", orientation: "sinistra-radicale" },
+    { text: "Bisogna abolire la proprietà privata dei mezzi di produzione.", level: 4, axis: "economico", orientation: "sinistra-radicale" },
     { text: "Seppure gli esperimenti socialisti del passato avessero fallito, non bisognerebbe comunque abbandonare l'idea di un cambiamento radicale della società.", level: 4, axis: "economico", orientation: "sinistra-radicale" },
     { text: "L'autogestione dei lavoratori sui luoghi di lavoro è necessaria per una società realmente democratica.", level: 4, axis: "economico", orientation: "sinistra-radicale" },
     { text: "La rivoluzione è necessaria per un vero cambiamento della società.", level: 4, axis: "economico", orientation: "sinistra-radicale" },
