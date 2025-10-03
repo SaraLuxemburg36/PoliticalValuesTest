@@ -68,7 +68,7 @@
   <h1>I tuoi risultati</h1>
 
   <div class="frame">
-    <canvas id="compass" width="500" height="500" aria-label="Political compass result"></canvas>
+    <canvas id="compass" width="1000" height="1000" aria-label="Political compass result"></canvas>
 
     <div class="values">
       <div>Coordinata X (economico): <strong id="x-val">0.00</strong></div>
@@ -79,7 +79,7 @@
   </div>
 
   <script>
-    // Recupera le coordinate salvate (valori sono su scala -10..+10)
+    // Recupera le coordinate salvate (valori scala -10..+10)
     const userX = parseFloat(localStorage.getItem("userX")) || 0;
     const userY = parseFloat(localStorage.getItem("userY")) || 0;
 
@@ -90,40 +90,34 @@
     const canvas = document.getElementById("compass");
     const ctx = canvas.getContext("2d");
 
-    const size = canvas.width;        // es. 500
-    const center = size / 2;         // 250
-    const cellsPerSemiAxis = 10;     // 10 quadretti per semiasse -> 20 totali
-    const scale = center / cellsPerSemiAxis; // dimensione di un quadretto in px (25 px se center 250)
+    const size = canvas.width;        // 1000
+    const center = size / 2;          // 500
+    const cellsPerSemiAxis = 10;      // 10 quadretti per semiasse -> 20 totali
+    const scale = center / cellsPerSemiAxis; // dimensione di un quadretto
 
-    // --- COLORI QUADRANTI (come richiesto) ---
+    // --- COLORI QUADRANTI ---
     const colorTL = "#ff8a8a";  // top-left = rosso
     const colorTR = "#8ab4ff";  // top-right = blu
     const colorBL = "#a8e6a1";  // bottom-left = verde
     const colorBR = "#fff1a8";  // bottom-right = giallo
 
-    // Riempie i 4 quadranti (attenzione: y=0 è in alto nel canvas)
-    // top-left
+    // Riempie i 4 quadranti
     ctx.fillStyle = colorTL;
     ctx.fillRect(0, 0, center, center);
 
-    // top-right
     ctx.fillStyle = colorTR;
     ctx.fillRect(center, 0, center, center);
 
-    // bottom-left
     ctx.fillStyle = colorBL;
     ctx.fillRect(0, center, center, center);
 
-    // bottom-right
     ctx.fillStyle = colorBR;
     ctx.fillRect(center, center, center, center);
 
-    // --- GRIGLIA DI QUADRETTI ---
-    // linee sottili per la griglia (leggera trasparenza)
+    // --- GRIGLIA ---
     ctx.strokeStyle = "rgba(0,0,0,0.12)";
     ctx.lineWidth = 1;
 
-    // utilizzo strokeRect per avere i quadretti ben definiti
     for (let row = 0; row < cellsPerSemiAxis * 2; row++) {
       for (let col = 0; col < cellsPerSemiAxis * 2; col++) {
         const x = col * scale;
@@ -132,51 +126,33 @@
       }
     }
 
-    // --- ASSI (linee più spesse) ---
+    // --- ASSI ---
     ctx.strokeStyle = "#333";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    // asse verticale
     ctx.moveTo(center + 0.5, 0);
     ctx.lineTo(center + 0.5, size);
-    // asse orizzontale
     ctx.moveTo(0, center + 0.5);
     ctx.lineTo(size, center + 0.5);
     ctx.stroke();
 
-    // --- ETICHETTE (Left/Right/Authoritarian/Libertarian) ---
-    ctx.fillStyle = "#222";
-    ctx.font = "16px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("Authoritarian", center, 18);
-    ctx.fillText("Libertarian", center, size - 6);
-
-    ctx.textAlign = "left";
-    ctx.fillText("Left", 8, center - 8);
-    ctx.textAlign = "right";
-    ctx.fillText("Right", size - 8, center - 8);
-
-    // --- PUNTINO UTENTE --- 
-    // normalizziamo e clampiamo i valori [-10, 10]
+    // --- PUNTINO UTENTE ---
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
     const ux = clamp(userX, -10, 10);
     const uy = clamp(userY, -10, 10);
 
-    // conversione in pixel: center + x * scale ; y è invertito (coordinate "politico" positive verso l'alto)
     const plotX = center + ux * scale;
     const plotY = center - uy * scale;
 
-    // disegna un cerchio con bordo bianco per risaltare sullo sfondo
     ctx.beginPath();
-    ctx.fillStyle = "#000"; // punto nero
-    ctx.strokeStyle = "#fff"; // bordo bianco
+    ctx.fillStyle = "#000";
+    ctx.strokeStyle = "#fff";
     ctx.lineWidth = 3;
-    const radius = Math.max(6, Math.round(scale * 0.28)); // dimensione relativa alla griglia
+    const radius = Math.max(6, Math.round(scale * 0.28));
     ctx.arc(plotX, plotY, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
-    // (opzionale) piccolo alone per miglior contrasto
     ctx.beginPath();
     ctx.globalAlpha = 0.08;
     ctx.fillStyle = "#000";
@@ -184,7 +160,7 @@
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    // Bottone per scaricare l'immagine
+    // Bottone download
     document.getElementById("download-btn").addEventListener("click", () => {
       const link = document.createElement("a");
       link.download = "political_compass.png";
