@@ -414,29 +414,25 @@ function answerQuestionTransverse(index, q) {
     // RISULTATI
     // =============================
     function showResults() {
-        let y = Math.max(-80, Math.min(80, score.y));
-        let x = Math.max(-100, Math.min(100, score.x));
+    let y = Math.max(-80, Math.min(80, score.y));
+    let x = Math.max(-100, Math.min(100, score.x));
 
-        let yCoord = (y / 80) * 10;
-        let xCoord = (x / 100) * 10;
+    let yCoord = (y / 80) * 10;
+    let xCoord = (x / 100) * 10;
 
-        yCoord = roundToQuarter(yCoord);
-        xCoord = roundToQuarter(xCoord);
+    yCoord = roundToQuarter(yCoord);
+    xCoord = roundToQuarter(xCoord);
 
-        if (Math.abs(yCoord) < 1e-12) yCoord = 0;
-        if (Math.abs(xCoord) < 1e-12) xCoord = 0;
+    if (Math.abs(yCoord) < 1e-12) yCoord = 0;
+    if (Math.abs(xCoord) < 1e-12) xCoord = 0;
 
-        const xStr = xCoord.toFixed(2);
-        const yStr = yCoord.toFixed(2);
+    // salviamo le coordinate in localStorage
+    localStorage.setItem("userX", xCoord.toFixed(2));
+    localStorage.setItem("userY", yCoord.toFixed(2));
 
-        document.body.innerHTML = `
-            <div class="container">
-                <h1>Risultati</h1>
-                <p>Coordinata X (economico): ${xStr}</p>
-                <p>Coordinata Y (politico): ${yStr}</p>
-            </div>
-        `;
-    }
+    // reindirizziamo alla pagina dei risultati
+    window.location.href = "results.html";
+}
 
     // =============================
     // AUTO-INIT E EXPORT
