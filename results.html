@@ -42,10 +42,9 @@
   <button id="download-btn">Scarica immagine</button>
 
   <script>
-    // Coordinate dell'utente (esempio: x = -4, y = 6)
-    // --> in futuro queste arriveranno dai calcoli nello script
-    const userX = -4;  // asse economico
-    const userY = 6;   // asse politico
+    // Recupera le coordinate salvate
+const userX = parseFloat(localStorage.getItem("userX")) || 0;
+const userY = parseFloat(localStorage.getItem("userY")) || 0;
 
     const canvas = document.getElementById("compass");
     const ctx = canvas.getContext("2d");
