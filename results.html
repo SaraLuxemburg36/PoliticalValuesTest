@@ -34,8 +34,9 @@
     canvas {
       border: 2px solid #333;
       display: block;
+      width: 500px;   /* dimensione visiva */
+      height: 500px;  /* dimensione visiva */
       max-width: 100%;
-      height: auto;
     }
 
     .values {
@@ -68,7 +69,8 @@
   <h1>I tuoi risultati</h1>
 
   <div class="frame">
-    <canvas id="compass" width="650" height="650" aria-label="Political compass result"></canvas>
+    <!-- Canvas in alta risoluzione interna -->
+    <canvas id="compass" width="2000" height="2000" aria-label="Political compass result"></canvas>
 
     <div class="values">
       <div>Coordinata X (economico): <strong id="x-val">0.00</strong></div>
@@ -90,8 +92,8 @@
     const canvas = document.getElementById("compass");
     const ctx = canvas.getContext("2d");
 
-    const size = canvas.width;        // 1000
-    const center = size / 2;          // 500
+    const size = canvas.width;        // 2000
+    const center = size / 2;          // 1000
     const cellsPerSemiAxis = 10;      // 10 quadretti per semiasse -> 20 totali
     const scale = center / cellsPerSemiAxis; // dimensione di un quadretto
 
@@ -148,7 +150,7 @@
     ctx.fillStyle = "#000";
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 3;
-    const radius = Math.max(6, Math.round(scale * 0.28));
+    const radius = Math.max(10, Math.round(scale * 0.28));
     ctx.arc(plotX, plotY, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
@@ -156,7 +158,7 @@
     ctx.beginPath();
     ctx.globalAlpha = 0.08;
     ctx.fillStyle = "#000";
-    ctx.arc(plotX, plotY, radius + 6, 0, Math.PI * 2);
+    ctx.arc(plotX, plotY, radius + 12, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
 
