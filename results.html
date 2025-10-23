@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Risultati - Political Compass</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body {
       background-color: #e0e0e0;
@@ -15,6 +15,7 @@
       min-height: 100vh;
       margin: 0;
       padding: 20px;
+      box-sizing: border-box;
     }
 
     h1 {
@@ -33,10 +34,9 @@
     canvas {
       border: 2px solid #333;
       display: block;
-      width: 500px;
-      height: 500px;
+      width: 500px;   /* dimensione visiva */
+      height: 500px;  /* dimensione visiva */
       max-width: 100%;
-      background-color: #fafafa;
     }
 
     .values {
@@ -59,6 +59,7 @@
       cursor: pointer;
     }
 
+    /* mobile adjustments */
     @media (max-width: 520px) {
       canvas { width: 320px; height: 320px; }
     }
@@ -68,112 +69,103 @@
   <h1>I tuoi risultati</h1>
 
   <div class="frame">
-    <canvas id="compass" width="2000" height="2000"></canvas>
+    <!-- Canvas in alta risoluzione interna -->
+    <canvas id="compass" width="2000" height="2000" aria-label="Political compass result"></canvas>
 
     <div class="values">
-      <div>Asse economico (X): <strong id="x-val">0.00</strong></div>
-      <div>Asse politico (Y): <strong id="y-val">0.00</strong></div>
+      <div>Coordinata X (economico): <strong id="x-val">0.00</strong></div>
+      <div>Coordinata Y (politico): <strong id="y-val">0.00</strong></div>
     </div>
 
     <button id="download-btn">Scarica immagine</button>
   </div>
 
   <script>
-    // =============================
-    // RECUPERO DATI
-    // =============================
+    // Recupera le coordinate salvate (valori scala -10..+10)
     const userX = parseFloat(localStorage.getItem("userX")) || 0;
     const userY = parseFloat(localStorage.getItem("userY")) || 0;
 
-    document.getElementById("x-val").textContent = userX.toFixed(2);
-    document.getElementById("y-val").textContent = userY.toFixed(2);
+    // Mostra numeri sotto canvas
+    document.getElementById('x-val').textContent = userX.toFixed(2);
+    document.getElementById('y-val').textContent = userY.toFixed(2);
 
-    // =============================
-    // DISEGNO GRAFICO
-    // =============================
     const canvas = document.getElementById("compass");
     const ctx = canvas.getContext("2d");
-    const w = canvas.width;
-    const h = canvas.height;
-    const midX = w / 2;
-    const midY = h / 2;
 
-    // Disegna assi principali
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(midX, 0);
-    ctx.lineTo(midX, h);
-    ctx.moveTo(0, midY);
-    ctx.lineTo(w, midY);
-    ctx.stroke();
+    const size = canvas.width;        // 2000
+    const center = size / 2;          // 1000
+    const cellsPerSemiAxis = 10;      // 10 quadretti per semiasse -> 20 totali
+    const scale = center / cellsPerSemiAxis; // dimensione di un quadretto
 
-    // Tacche per scala (-10..10)
-    ctx.strokeStyle = "#666";
+    // --- COLORI QUADRANTI ---
+    const colorTL = "#ff8a8a";  // top-left = rosso
+    const colorTR = "#8ab4ff";  // top-right = blu
+    const colorBL = "#a8e6a1";  // bottom-left = verde
+    const colorBR = "#fff1a8";  // bottom-right = giallo
+
+    // Riempie i 4 quadranti
+    ctx.fillStyle = colorTL;
+    ctx.fillRect(0, 0, center, center);
+
+    ctx.fillStyle = colorTR;
+    ctx.fillRect(center, 0, center, center);
+
+    ctx.fillStyle = colorBL;
+    ctx.fillRect(0, center, center, center);
+
+    ctx.fillStyle = colorBR;
+    ctx.fillRect(center, center, center, center);
+
+    // --- GRIGLIA ---
+    ctx.strokeStyle = "rgba(0,0,0,0.12)";
     ctx.lineWidth = 1;
-    for (let i = -10; i <= 10; i++) {
-      if (i === 0) continue;
-      const x = midX + (i * (w / 22)); // leggero margine
-      const y = midY - (i * (h / 22));
-      // tacche orizzontali
-      ctx.beginPath();
-      ctx.moveTo(x, midY - 10);
-      ctx.lineTo(x, midY + 10);
-      ctx.stroke();
-      // tacche verticali
-      ctx.beginPath();
-      ctx.moveTo(midX - 10, y);
-      ctx.lineTo(midX + 10, y);
-      ctx.stroke();
+
+    for (let row = 0; row < cellsPerSemiAxis * 2; row++) {
+      for (let col = 0; col < cellsPerSemiAxis * 2; col++) {
+        const x = col * scale;
+        const y = row * scale;
+        ctx.strokeRect(Math.round(x) + 0.5, Math.round(y) + 0.5, Math.round(scale) - 1, Math.round(scale) - 1);
+      }
     }
 
-    // Etichette
-    ctx.font = "bold 60px Arial";
-    ctx.fillStyle = "#444";
-    ctx.textAlign = "center";
-    ctx.fillText("Sinistra", midX - w/3, h - 100);
-    ctx.fillText("Destra", midX + w/3, h - 100);
-    ctx.save();
-    ctx.translate(100, midY);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText("Autoritarismo", 0, 0);
-    ctx.restore();
-    ctx.save();
-    ctx.translate(w - 100, midY);
-    ctx.rotate(Math.PI / 2);
-    ctx.fillText("Libertarismo", 0, 0);
-    ctx.restore();
-
-    // =============================
-    // POSIZIONE UTENTE
-    // =============================
-    // userX e userY sono in scala -10..+10
-    const scaleX = (w / 20);
-    const scaleY = (h / 20);
-    const posX = midX + userX * scaleX;
-    const posY = midY - userY * scaleY;
-
-    ctx.fillStyle = "red";
+    // --- ASSI ---
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(posX, posY, 40, 0, 2 * Math.PI);
-    ctx.fill();
-
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 6;
+    ctx.moveTo(center + 0.5, 0);
+    ctx.lineTo(center + 0.5, size);
+    ctx.moveTo(0, center + 0.5);
+    ctx.lineTo(size, center + 0.5);
     ctx.stroke();
 
-    ctx.font = "bold 60px Arial";
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("Tu", posX, posY);
+    // --- PUNTINO UTENTE ---
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const ux = clamp(userX, -10, 10);
+    const uy = clamp(userY, -10, 10);
 
-    // =============================
-    // DOWNLOAD
-    // =============================
+    const plotX = center + ux * scale;
+    const plotY = center - uy * scale;
+
+    ctx.beginPath();
+    ctx.fillStyle = "#000";
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    const radius = Math.max(10, Math.round(scale * 0.28));
+    ctx.arc(plotX, plotY, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = "#000";
+    ctx.arc(plotX, plotY, radius + 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Bottone download
     document.getElementById("download-btn").addEventListener("click", () => {
       const link = document.createElement("a");
-      link.download = "risultato_political_compass.png";
+      link.download = "political_compass.png";
       link.href = canvas.toDataURL("image/png");
       link.click();
     });
