@@ -104,350 +104,220 @@ const questions = [
    { text: "Bisogna mettere da parte le ideologie e concentrarsi sul bene della nazione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" }
 ];
 
-// contatori per quanto è già stato spostato verso il centro da domande trasversali
-// misurano i punti TOTALE già spostati verso il centro per ciascun sottotipo (max 20)
 let transverseMoved = {
   centrismo: 0,
   terzoposizionismo: 0
 };
 
-    // =============================
-    // PUNTEGGI
-    // =============================
-    const scoring = {
-        "libertarismo":   [-3, -2, -1, 0, 1, 2, 3],
-        "autoritarismo":  [3, 2, 1, 0, -1, -2, -3],
-        "sinistra-riformista": [-3, -2, -1, 0, 1, 2, 3],
-        "destra-riformista":   [3, 2, 1, 0, -1, -2, -3],
-        "sinistra-filosofica": [-4, -3, -2, 0, 2, 3, 4],
-        "destra-filosofica":   [4, 3, 2, 0, -2, -3, -4],
-        "sinistra-radicale":   [-5, -4, -3, 0, 3, 4, 5],
-        "destra-radicale":     [5, 4, 3, 0, -3, -4, -5],
-        "trasversale":         [] // gestita separatamente, fallback = 0
-    };
+// =============================
+// PUNTEGGI
+// =============================
+const scoring = {
+  "libertarismo": [-3, -2, -1, 0, 1, 2, 3],
+  "autoritarismo": [3, 2, 1, 0, -1, -2, -3],
+  "sinistra-riformista": [-3, -2, -1, 0, 1, 2, 3],
+  "destra-riformista": [3, 2, 1, 0, -1, -2, -3],
+  "sinistra-filosofica": [-4, -3, -2, 0, 2, 3, 4],
+  "destra-filosofica": [4, 3, 2, 0, -2, -3, -4],
+  "sinistra-radicale": [-5, -4, -3, 0, 3, 4, 5],
+  "destra-radicale": [5, 4, 3, 0, -3, -4, -5],
+  "trasversale": [] // gestita separatamente
+};
 
-    // =============================
-    // STATE
-    // =============================
-    let currentQuestion = 0;
-    let score = { x: 0, y: 0 };
-    let selectedQuestions = [];
+// =============================
+// STATE
+// =============================
+let currentQuestion = 0;
+let score = { x: 0, y: 0 };
+let selectedQuestions = [];
 
-    // =============================
-    // UTILITIES
-    // =============================
-    function shuffle(array) {
-        let a = array.slice();
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-    }
-
-    function roundToQuarter(num) {
-        const eps = Number.EPSILON || 2.220446049250313e-16;
-        return Math.round((num + eps) * 4) / 4;
-    }
-
-    // crea gli elementi della UI se mancano (fallback)
-    function ensureQuestionUI() {
-        let container = document.querySelector('.container');
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'container';
-            document.body.innerHTML = ''; // pulisce
-            document.body.appendChild(container);
-        }
-
-        if (!document.getElementById('question-number')) {
-            const el = document.createElement('div');
-            el.id = 'question-number';
-            el.style.marginBottom = '8px';
-            container.appendChild(el);
-        }
-
-        if (!document.getElementById('question-text')) {
-            const el = document.createElement('div');
-            el.id = 'question-text';
-            el.style.fontSize = '1.25rem';
-            el.style.margin = '12px 0';
-            container.appendChild(el);
-        }
-
-        if (!document.getElementById('answers')) {
-            const answers = document.createElement('div');
-            answers.id = 'answers';
-            container.appendChild(answers);
-        }
-
-        // opzionale: aggiungi pulsante "indietro"
-        if (!document.getElementById('back-button')) {
-            const back = document.createElement('button');
-            back.id = 'back-button';
-            back.textContent = 'Indietro';
-            back.style.display = 'none';
-            back.onclick = goBack;
-            container.appendChild(back);
-        }
-    }
-
-    // =============================
-    // LOGICA TEST
-    // =============================
-    function buildQuestionSet() {
-        const levels = [1, 2, 3, 4, 5];
-        selectedQuestions = [];
-        levels.forEach(lvl => {
-            let group = questions.filter(q => q.level === lvl);
-            if (group.length) group = shuffle(group);
-            selectedQuestions = selectedQuestions.concat(group);
-        });
-    }
-
-    function startTest() {
-        // reset
-        currentQuestion = 0;
-        score = { x: 0, y: 0 };
-        buildQuestionSet();
-        if (!selectedQuestions.length) {
-            console.error("Nessuna domanda selezionata: controlla che 'questions' contenga items con level 1-5.");
-            showNoQuestionsMessage();
-            return;
-        }
-        showQuestion();
-    }
-
-    function showNoQuestionsMessage() {
-        ensureQuestionUI();
-        document.getElementById('question-number').textContent = '';
-        document.getElementById('question-text').textContent = 'Nessuna domanda disponibile.';
-        document.getElementById('answers').innerHTML = '';
-    }
-
-   function showQuestion() {
-    ensureQuestionUI();
-
-    if (currentQuestion >= selectedQuestions.length) {
-        showResults();
-        return;
-    }
-
-    const q = selectedQuestions[currentQuestion];
-    const qNumEl = document.getElementById('question-number');
-    const qTextEl = document.getElementById('question-text');
-    const answersDiv = document.getElementById('answers');
-
-    qNumEl.textContent = `Domanda ${currentQuestion + 1} di ${selectedQuestions.length}`;
-    qTextEl.textContent = q.text;
-    answersDiv.innerHTML = '';
-
-    // se è una domanda trasversale, usiamo 5 pulsanti specifici
-    if (q.orientation === 'trasversale') {
-        answersDiv.classList.add('five');
-        const labels5 = [
-            "D'accordo",
-            "In disaccordo (destra)",
-            "In disaccordo (sinistra)",
-            "Completamente in disaccordo (destra)",
-            "Completamente in disaccordo (sinistra)"
-        ];
-        for (let i = 0; i < labels5.length; i++) {
-            const btn = document.createElement('button');
-            btn.textContent = labels5[i];
-            btn.style.display = 'block';
-            btn.style.width = '100%';
-            btn.style.margin = '6px 0';
-            btn.onclick = () => answerQuestionTransverse(i, q);
-            answersDiv.appendChild(btn);
-        }
-    } else {
-        // domande standard: 7 pulsanti
-        answersDiv.classList.remove('five');
-        const labels = [
-            "Completamente d'accordo",
-            "D'accordo",
-            "Parzialmente d'accordo",
-            "Neutrale/dipende",
-            "Parzialmente in disaccordo",
-            "In disaccordo",
-            "Completamente in disaccordo"
-        ];
-        for (let i = 0; i < labels.length; i++) {
-            const btn = document.createElement('button');
-            btn.textContent = labels[i];
-            btn.style.display = 'block';
-            btn.style.width = '100%';
-            btn.style.margin = '6px 0';
-            btn.onclick = () => answerQuestion(i);
-            answersDiv.appendChild(btn);
-        }
-    }
-
-    // mostra/nascondi indietro
-    const back = document.getElementById('back-button');
-    if (back) back.style.display = currentQuestion > 0 ? 'block' : 'none';
+// =============================
+// UTILITIES
+// =============================
+function shuffle(array) {
+  let a = array.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
-    function answerQuestion(index) {
-    const q = selectedQuestions[currentQuestion];
-
-    if (q.orientation === "trasversale") {
-        // Gestione speciale delle domande trasversali
-        // index: 0 = Completamente d'accordo, 1 = D'accordo, ... 6 = Completamente in disaccordo
-        // Puoi anche personalizzare le label per queste domande
-
-        if (index === 1) {
-            // D'accordo → sposta di ±4 verso il centro
-            if (score.x > 0) score.x -= 4;
-            else if (score.x < 0) score.x += 4;
-        } else if (index === 2) {
-            // Parzialmente d'accordo → sposta di ±2 verso il centro
-            if (score.x > 0) score.x -= 2;
-            else if (score.x < 0) score.x += 2;
-        } else if (index === 4) {
-            // Parzialmente in disaccordo → sposta di ±2 verso il centro
-            if (score.x > 0) score.x -= 2;
-            else if (score.x < 0) score.x += 2;
-        } else if (index === 5) {
-            // In disaccordo → sposta di ±4 verso il centro
-            if (score.x > 0) score.x -= 4;
-            else if (score.x < 0) score.x += 4;
-        }
-        // Completamente d'accordo (0) e completamente in disaccordo (6) non muovono nulla
-    } else {
-        // Logica standard
-        const values = scoring[q.orientation];
-        if (!values || !Array.isArray(values) || typeof values[index] === 'undefined') {
-            console.warn(`Scoring mancante per orientation="${q.orientation}". Valore considerato = 0.`);
-        } else {
-            if (q.axis === 'politico') score.y += values[index];
-            else if (q.axis === 'economico') score.x += values[index];
-        }
-    }
-
-    currentQuestion++;
-    showQuestion();
+function roundToQuarter(num) {
+  const eps = Number.EPSILON || 2.220446049250313e-16;
+  return Math.round((num + eps) * 4) / 4;
 }
 
+// =============================
+// LOGICA TEST
+// =============================
+function buildQuestionSet() {
+  const levels = [1, 2, 3, 4, 5];
+  selectedQuestions = [];
+  levels.forEach(lvl => {
+    let group = questions.filter(q => q.level === lvl);
+    if (group.length) group = shuffle(group);
+    selectedQuestions = selectedQuestions.concat(group);
+  });
+}
+
+function startTest() {
+  currentQuestion = 0;
+  score = { x: 0, y: 0 };
+  transverseMoved = { centrismo: 0, terzoposizionismo: 0 }; // 🔧 reset trasversali
+  buildQuestionSet();
+  if (!selectedQuestions.length) {
+    console.error("Nessuna domanda selezionata!");
+    return;
+  }
+  showQuestion();
+}
+
+function showQuestion() {
+  ensureQuestionUI();
+
+  if (currentQuestion >= selectedQuestions.length) {
+    showResults();
+    return;
+  }
+
+  const q = selectedQuestions[currentQuestion];
+  const qNumEl = document.getElementById('question-number');
+  const qTextEl = document.getElementById('question-text');
+  const answersDiv = document.getElementById('answers');
+
+  qNumEl.textContent = `Domanda ${currentQuestion + 1} di ${selectedQuestions.length}`;
+  qTextEl.textContent = q.text;
+  answersDiv.innerHTML = '';
+
+  if (q.orientation === 'trasversale') {
+    answersDiv.classList.add('five');
+    const labels5 = [
+      "D'accordo",
+      "In disaccordo (destra)",
+      "In disaccordo (sinistra)",
+      "Completamente in disaccordo (destra)",
+      "Completamente in disaccordo (sinistra)"
+    ];
+    for (let i = 0; i < labels5.length; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = labels5[i];
+      btn.onclick = () => answerQuestionTransverse(i, q);
+      btn.style.display = 'block';
+      btn.style.width = '100%';
+      btn.style.margin = '6px 0';
+      answersDiv.appendChild(btn);
+    }
+  } else {
+    answersDiv.classList.remove('five');
+    const labels = [
+      "Completamente d'accordo",
+      "D'accordo",
+      "Parzialmente d'accordo",
+      "Neutrale/dipende",
+      "Parzialmente in disaccordo",
+      "In disaccordo",
+      "Completamente in disaccordo"
+    ];
+    for (let i = 0; i < labels.length; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = labels[i];
+      btn.onclick = () => answerQuestion(i);
+      btn.style.display = 'block';
+      btn.style.width = '100%';
+      btn.style.margin = '6px 0';
+      answersDiv.appendChild(btn);
+    }
+  }
+
+  const back = document.getElementById('back-button');
+  if (back) back.style.display = currentQuestion > 0 ? 'block' : 'none';
+}
+
+// =============================
+// RISPOSTE NORMALI
+// =============================
+function answerQuestion(index) {
+  const q = selectedQuestions[currentQuestion];
+  if (q.orientation !== "trasversale") {
+    const values = scoring[q.orientation];
+    if (values && typeof values[index] !== 'undefined') {
+      if (q.axis === 'politico') score.y += values[index];
+      else if (q.axis === 'economico') score.x += values[index];
+    }
+  }
+  currentQuestion++;
+  showQuestion();
+}
+
+// =============================
+// RISPOSTE TRASVERSALI (centrismo/terzoposizionismo)
+// =============================
 function answerQuestionTransverse(index, q) {
-    // q.subtype deve essere "centrismo" o "terzoposizionismo"
-    const subtype = q.subtype || 'centrismo';
+  const subtype = q.subtype || 'centrismo';
 
-    // helper: muovi verso il centro riducendo |x|, senza oltrepassare 0, e con cap cumulativo di 20
-    function moveTowardCenter(amount) {
-        // quanto è ancora possibile spostare per questo subtype
-        const remaining = 20 - Math.abs(transverseMoved[subtype] || 0);
-        if (remaining <= 0) return 0; // non si può più spostare
-        const actual = Math.min(Math.abs(amount), remaining);
-
-        if (score.x > 0) {
-            // riduci valore positivo
-            const newX = score.x - actual;
-            // non oltrepassare zero
-            score.x = newX < 0 ? 0 : newX;
-        } else if (score.x < 0) {
-            // aumenta (verso 0) il valore negativo
-            const newX = score.x + actual;
-            score.x = newX > 0 ? 0 : newX;
-        } else {
-            // già zero: niente da fare
-        }
-        // conto i punti VALIDI spostati verso il centro (somma assoluta)
-        transverseMoved[subtype] = (transverseMoved[subtype] || 0) + actual;
-        return actual;
-    }
-
-    // index mapping per i 5 pulsanti:
-    // 0 = D'accordo  -> sposta verso centro di 4
-    // 1 = In disaccordo (destra) -> se sei a sinistra (x<0) ti avvicina di 2, se sei a destra (x>0) ti allontana di 2
-    // 2 = In disaccordo (sinistra) -> se sei a destra (x>0) ti avvicina di 2, se sei a sinistra (x<0) ti allontana di 2
-    // 3 = Completamente in disaccordo (destra) -> 0 (nessuna variazione)
-    // 4 = Completamente in disaccordo (sinistra) -> 0 (nessuna variazione)
-
-    if (index === 0) {
-        // D'accordo: muovi verso centro di 4 (cap 20)
-        moveTowardCenter(4);
-    } else if (index === 1) {
-        // In disaccordo (destra)
-        if (score.x < 0) {
-            // sei a sinistra: avvicina al centro di 2
-            moveTowardCenter(2);
-        } else if (score.x > 0) {
-            // sei a destra: allontana ulteriormente di 2 (ma rispetta clamp +/-100)
-            score.x = Math.max(-100, Math.min(100, score.x + 2));
-        }
-    } else if (index === 2) {
-        // In disaccordo (sinistra)
-        if (score.x > 0) {
-            // sei a destra: avvicina al centro di 2
-            moveTowardCenter(2);
-        } else if (score.x < 0) {
-            // sei a sinistra: allontana ulteriormente di 2 verso sinistra
-            score.x = Math.max(-100, Math.min(100, score.x - 2));
-        }
-    } else if (index === 3 || index === 4) {
-        // Completamente in disaccordo (destra/sinistra): nessuna variazione (0)
-        // (segue la tua specifica: 0)
-    }
-
-    // avanti con la domanda successiva
+  // 🔧 FIX: blocca se l'utente è già a ±100
+  if (Math.abs(score.x) >= 100) {
     currentQuestion++;
     showQuestion();
+    return;
+  }
+
+  // helper per muovere verso il centro con cap 20 e senza oltrepassare 0
+  function moveTowardCenter(amount) {
+    const remaining = 20 - Math.abs(transverseMoved[subtype] || 0);
+    if (remaining <= 0) return 0;
+    const actual = Math.min(Math.abs(amount), remaining);
+
+    if (score.x > 0) score.x = Math.max(0, score.x - actual);
+    else if (score.x < 0) score.x = Math.min(0, score.x + actual);
+
+    transverseMoved[subtype] += actual;
+    return actual;
+  }
+
+  // 🔧 Gestione risposte
+  if (index === 0) {
+    moveTowardCenter(4);
+  } else if (index === 1) {
+    if (score.x < 0) moveTowardCenter(2);
+    else if (score.x > 0) score.x = Math.min(100, score.x + 2);
+  } else if (index === 2) {
+    if (score.x > 0) moveTowardCenter(2);
+    else if (score.x < 0) score.x = Math.max(-100, score.x - 2);
+  } // 3 e 4 non fanno nulla
+
+  currentQuestion++;
+  showQuestion();
 }
 
-    function goBack() {
-        if (currentQuestion === 0) return;
-        currentQuestion--;
-        // dobbiamo rimuovere l'effetto della risposta precedente: per farlo, ricalcoliamo da zero fino a currentQuestion-1
-        score = { x: 0, y: 0 };
-        for (let i = 0; i < currentQuestion; i++) {
-            const q = selectedQuestions[i];
-            // qui non teniamo le risposte passate memorizzate: se vuoi la funzione "indietro" precisa devi memorizzare le scelte in un array.
-            // Per ora, per semplicità, ricarichiamo la domanda corrente (senza alterazioni retroattive).
-        }
-        // Nota: per avere indietro preciso, dobbiamo memorizzare le risposte (posso aggiungerlo se vuoi).
-        showQuestion();
-    }
+// =============================
+// RISULTATI
+// =============================
+function showResults() {
+  // 🔧 FIX: applica il cap SOLO in fase di conversione
+  const cappedY = Math.max(-80, Math.min(80, score.y));
+  const cappedX = Math.max(-100, Math.min(100, score.x));
 
-    // =============================
-    // RISULTATI
-    // =============================
-    function showResults() {
-    let y = Math.max(-80, Math.min(80, score.y));
-    let x = Math.max(-100, Math.min(100, score.x));
+  let yCoord = (cappedY / 80) * 10;
+  let xCoord = (cappedX / 100) * 10;
 
-    let yCoord = (y / 80) * 10;
-    let xCoord = (x / 100) * 10;
+  yCoord = roundToQuarter(yCoord);
+  xCoord = roundToQuarter(xCoord);
 
-    yCoord = roundToQuarter(yCoord);
-    xCoord = roundToQuarter(xCoord);
+  if (Math.abs(yCoord) < 1e-12) yCoord = 0;
+  if (Math.abs(xCoord) < 1e-12) xCoord = 0;
 
-    if (Math.abs(yCoord) < 1e-12) yCoord = 0;
-    if (Math.abs(xCoord) < 1e-12) xCoord = 0;
+  localStorage.setItem("userX", xCoord.toFixed(2));
+  localStorage.setItem("userY", yCoord.toFixed(2));
 
-    // salviamo le coordinate in localStorage
-    localStorage.setItem("userX", xCoord.toFixed(2));
-    localStorage.setItem("userY", yCoord.toFixed(2));
-
-    // reindirizziamo alla pagina dei risultati
-    window.location.href = "results.html";
+  window.location.href = "results.html";
 }
 
-    // =============================
-    // AUTO-INIT E EXPORT
-    // =============================
-    window.startTest = startTest; // espongo la funzione per chiamarla da HTML se vuoi
+// =============================
+// AUTO-INIT
+// =============================
+document.addEventListener('DOMContentLoaded', function () {
+  if (document.getElementById('answers')) startTest();
+});
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // se siamo sulla pagina delle domande (presenza #answers), avviamo in automatico
-        if (document.getElementById('answers')) {
-            // assicurati di avere lo script tag con defer oppure senza: in entrambi i casi questo listener funziona
-            startTest();
-        } else {
-            // fallback: se la pagina non ha .container ma probabilmente è test.html senza markup,
-            // possiamo creare la UI e avviare comunque il test (opzionale)
-            // se preferisci che non avvii automaticamente in assenza di markup, commenta la riga seguente:
-            // ensureQuestionUI(); startTest();
-        }
-    });
