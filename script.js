@@ -103,7 +103,8 @@ const questions = [
    { text: "I sindacati dovrebbero essere sostituiti dalle corporazioni.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" },
    { text: "Bisogna mettere da parte le ideologie e concentrarsi sul bene della nazione.", level: 5, axis: "economico", orientation: "trasversale", subtype: "terzoposizionismo" }
 ];
-
+// contatori per quanto è già stato spostato verso il centro da domande trasversali
+// misurano i punti TOTALE già spostati verso il centro per ciascun sottotipo (max 20)
 let transverseMoved = {
   centrismo: 0,
   terzoposizionismo: 0
@@ -121,7 +122,7 @@ const scoring = {
   "destra-filosofica": [4, 3, 2, 0, -2, -3, -4],
   "sinistra-radicale": [-5, -4, -3, 0, 3, 4, 5],
   "destra-radicale": [5, 4, 3, 0, -3, -4, -5],
-  "trasversale": [] // gestita separatamente
+  "trasversale": [] // gestita separatamente, fallback = 0
 };
 
 // =============================
@@ -164,15 +165,25 @@ function buildQuestionSet() {
 function startTest() {
   currentQuestion = 0;
   score = { x: 0, y: 0 };
-  transverseMoved = { centrismo: 0, terzoposizionismo: 0 }; // 🔧 reset trasversali
   buildQuestionSet();
   if (!selectedQuestions.length) {
-    console.error("Nessuna domanda selezionata!");
+    console.error("Nessuna domanda selezionata.");
+    showNoQuestionsMessage();
     return;
   }
   showQuestion();
 }
 
+function showNoQuestionsMessage() {
+  ensureQuestionUI();
+  document.getElementById('question-number').textContent = '';
+  document.getElementById('question-text').textContent = 'Nessuna domanda disponibile.';
+  document.getElementById('answers').innerHTML = '';
+}
+
+// =============================
+// DOMANDE E RISPOSTE
+// =============================
 function showQuestion() {
   ensureQuestionUI();
 
@@ -202,10 +213,10 @@ function showQuestion() {
     for (let i = 0; i < labels5.length; i++) {
       const btn = document.createElement('button');
       btn.textContent = labels5[i];
-      btn.onclick = () => answerQuestionTransverse(i, q);
       btn.style.display = 'block';
       btn.style.width = '100%';
       btn.style.margin = '6px 0';
+      btn.onclick = () => answerQuestionTransverse(i, q);
       answersDiv.appendChild(btn);
     }
   } else {
@@ -222,10 +233,10 @@ function showQuestion() {
     for (let i = 0; i < labels.length; i++) {
       const btn = document.createElement('button');
       btn.textContent = labels[i];
-      btn.onclick = () => answerQuestion(i);
       btn.style.display = 'block';
       btn.style.width = '100%';
       btn.style.margin = '6px 0';
+      btn.onclick = () => answerQuestion(i);
       answersDiv.appendChild(btn);
     }
   }
@@ -234,58 +245,61 @@ function showQuestion() {
   if (back) back.style.display = currentQuestion > 0 ? 'block' : 'none';
 }
 
-// =============================
-// RISPOSTE NORMALI
-// =============================
 function answerQuestion(index) {
   const q = selectedQuestions[currentQuestion];
-  if (q.orientation !== "trasversale") {
-    const values = scoring[q.orientation];
-    if (values && typeof values[index] !== 'undefined') {
-      if (q.axis === 'politico') score.y += values[index];
-      else if (q.axis === 'economico') score.x += values[index];
-    }
+
+  if (q.orientation === "trasversale") return; // gestita separatamente
+
+  const values = scoring[q.orientation];
+  if (!values || typeof values[index] === 'undefined') {
+    console.warn(`Scoring mancante per orientation="${q.orientation}"`);
+  } else {
+    // ✅ Non applichiamo ancora il cap: i valori possono superare ±80 / ±100 internamente
+    if (q.axis === 'politico') score.y += values[index];
+    else if (q.axis === 'economico') score.x += values[index];
   }
+
   currentQuestion++;
   showQuestion();
 }
 
-// =============================
-// RISPOSTE TRASVERSALI (centrismo/terzoposizionismo)
-// =============================
 function answerQuestionTransverse(index, q) {
   const subtype = q.subtype || 'centrismo';
 
-  // 🔧 FIX: blocca se l'utente è già a ±100
+  // ✅ blocco trasversali se già a ±100
   if (Math.abs(score.x) >= 100) {
     currentQuestion++;
     showQuestion();
     return;
   }
 
-  // helper per muovere verso il centro con cap 20 e senza oltrepassare 0
   function moveTowardCenter(amount) {
     const remaining = 20 - Math.abs(transverseMoved[subtype] || 0);
     if (remaining <= 0) return 0;
     const actual = Math.min(Math.abs(amount), remaining);
 
-    if (score.x > 0) score.x = Math.max(0, score.x - actual);
-    else if (score.x < 0) score.x = Math.min(0, score.x + actual);
+    // ✅ impedisce modifiche se a ±100
+    if (Math.abs(score.x) >= 100) return 0;
 
-    transverseMoved[subtype] += actual;
+    if (score.x > 0) {
+      const newX = score.x - actual;
+      score.x = newX < 0 ? 0 : newX;
+    } else if (score.x < 0) {
+      const newX = score.x + actual;
+      score.x = newX > 0 ? 0 : newX;
+    }
+    transverseMoved[subtype] = (transverseMoved[subtype] || 0) + actual;
     return actual;
   }
 
-  // 🔧 Gestione risposte
-  if (index === 0) {
-    moveTowardCenter(4);
-  } else if (index === 1) {
+  if (index === 0) moveTowardCenter(4);
+  else if (index === 1) {
     if (score.x < 0) moveTowardCenter(2);
-    else if (score.x > 0) score.x = Math.min(100, score.x + 2);
+    else if (score.x > 0) score.x = Math.max(-100, Math.min(100, score.x + 2));
   } else if (index === 2) {
     if (score.x > 0) moveTowardCenter(2);
-    else if (score.x < 0) score.x = Math.max(-100, score.x - 2);
-  } // 3 e 4 non fanno nulla
+    else if (score.x < 0) score.x = Math.max(-100, Math.min(100, score.x - 2));
+  }
 
   currentQuestion++;
   showQuestion();
@@ -295,7 +309,7 @@ function answerQuestionTransverse(index, q) {
 // RISULTATI
 // =============================
 function showResults() {
-  // 🔧 FIX: applica il cap SOLO in fase di conversione
+  // ✅ Applica i cap SOLO in questa fase
   const cappedY = Math.max(-80, Math.min(80, score.y));
   const cappedX = Math.max(-100, Math.min(100, score.x));
 
@@ -317,7 +331,8 @@ function showResults() {
 // =============================
 // AUTO-INIT
 // =============================
+window.startTest = startTest;
+
 document.addEventListener('DOMContentLoaded', function () {
   if (document.getElementById('answers')) startTest();
 });
-
