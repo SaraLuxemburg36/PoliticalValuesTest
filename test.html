@@ -1,45 +1,18 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoliticalValues Test - Domande</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PoliticalValues Test</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="script.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Schermata iniziale -->
-        <div id="start-screen">
-            <h1>PoliticalValues Test</h1>
-            <p>Premi il pulsante qui sotto per iniziare il test politico.</p>
-            <button id="start-btn" onclick="startTest()">Inizia il test</button>
-        </div>
-
-        <!-- Contenitore delle domande (inizialmente nascosto) -->
-        <div id="quiz-section" style="display:none;">
-            <div id="question-number"></div>
-            <div id="question-text"></div>
-            <div id="answers"></div>
-        </div>
-    </div>
-
-    <script>
-      // Mostra il quiz e nasconde la schermata iniziale quando si clicca "Inizia il test"
-      function startTest() {
-        document.getElementById("start-screen").style.display = "none";
-        document.getElementById("quiz-section").style.display = "block";
-        if (typeof window.startTestOriginal === "function") {
-          window.startTestOriginal(); // chiama la funzione vera dal tuo script.js
-        }
-      }
-
-      // Rinominazione automatica della funzione originale (così non la perdi)
-      document.addEventListener("DOMContentLoaded", () => {
-        if (typeof window.startTest === "function") {
-          window.startTestOriginal = window.startTest;
-        }
-      });
-    </script>
+  <div class="container">
+    <div id="question-number"></div>
+    <div id="question-text"></div>
+    <div id="answers"></div>
+    <button id="back-button" style="display:none;">Indietro</button>
+  </div>
 </body>
 </html>
