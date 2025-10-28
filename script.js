@@ -434,25 +434,14 @@ function answerQuestionTransverse(index, q) {
     window.location.href = "results.html";
 }
 
-    // =============================
-    // AUTO-INIT E EXPORT
-    // =============================
-    window.startTest = startTest; // espongo la funzione per chiamarla da HTML se vuoi
+   // =============================
+// AUTO-INIT E EXPORT
+// =============================
+window.startTest = startTest; // espone la funzione per l'HTML
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // se siamo sulla pagina delle domande (presenza #answers), avviamo in automatico
-        if (document.getElementById('answers')) {
-            // assicurati di avere lo script tag con defer oppure senza: in entrambi i casi questo listener funziona
-            startTest();
-        } else {
-            // fallback: se la pagina non ha .container ma probabilmente è test.html senza markup,
-            // possiamo creare la UI e avviare comunque il test (opzionale)
-            // se preferisci che non avvii automaticamente in assenza di markup, commenta la riga seguente:
-            // ensureQuestionUI(); startTest();
-        }
-    document.addEventListener("DOMContentLoaded", function () {
-  // appena la pagina è pronta, iniziamo il test direttamente
-  ensureQuestionUI();
-  startTest();
+document.addEventListener('DOMContentLoaded', function () {
+    // se siamo sulla pagina delle domande e il markup è già pronto
+    if (document.getElementById('answers')) {
+        startTest(); // avvio automatico solo se serve
+    }
 });
-
