@@ -450,4 +450,9 @@ function answerQuestionTransverse(index, q) {
             // se preferisci che non avvii automaticamente in assenza di markup, commenta la riga seguente:
             // ensureQuestionUI(); startTest();
         }
-    });
+    document.addEventListener("DOMContentLoaded", function () {
+  // appena la pagina è pronta, iniziamo il test direttamente
+  ensureQuestionUI();
+  startTest();
+});
+
